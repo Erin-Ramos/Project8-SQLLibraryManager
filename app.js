@@ -23,41 +23,33 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
+// create Sequelize instance and test connection
 (async () => {
   try {
       await sequelize.authenticate();
       console.log('Connection has been established successfully.');
+      await sequelize.sync();
   } catch (error) {
       console.error('Unable to connect to the database:', error);
   }
 })();
 
-// Sync Model with Database
-(async () => {
-  try {
-      await sequelize.sync({ force: true });
-      console.log('All models were synchronized successfully.');
-  } catch (error) {
-      console.error('Error syncing models:', error);
-  }
-})();
-
-// catch 404 and forward to error handler
+// Catch 404 and forward to error handler
 app.use(function(req, res, next) {
   const err = new Error('Page Not Found');
   err.status = 404;
   next(err);
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+// Global Error Handler
+app.use((err, req, res, next) => {
+  err.status = err.status || 500;
+  err.message = err.message || 'Internal Server Error';
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+  console.error(`Error ${err.status}: ${err.message}`);
+
+  res.status(err.status);
+  res.render('error', { err }); 
 });
 
 module.exports = app;
