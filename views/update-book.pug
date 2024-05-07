@@ -1,22 +1,32 @@
-extends layout 
+extends layout
 
-block content 
-    h1 New Book 
-    form(method='post', action='/books/new')
+block content
+    h1 Update Book
 
-    p
-        label(for='title') Title
-        input#title(name='title' type='text', value=book.title)
-    p
-        label(for='author') Author
-        input#title(name='author' type='text', value=book.author)
-    p
-        label(for='genre') Genre
-        input#title(name='genre' type='text', value=book.genre)
-    p
-        label(for='year') Year
-        input#title(name='year' type='text', value=book.year)
-    p 
-        input(type='submit' value='Update Book')
-    p 
-        a.button(href='/') Cancel
+    if errors && errors.length > 0
+        ul  
+            each error in errors 
+                .error
+                    li= error.message
+
+    form(method='post', action=`/books/${book.id}`)
+        p
+            label(for='title') Title
+            input#title(name='title', type='text', value=book.title)
+        p
+            label(for='author') Author
+            input#author(name='author', type='text', value=book.author)
+        p
+            label(for='genre') Genre
+            input#genre(name='genre', type='text', value=book.genre)
+        p
+            label(for='year') Year
+            input#year(name='year', type='text', value=book.year)
+        p
+            input(type='submit', value='Update Book')
+        p
+            a.button(href='/') Cancel
+
+    form(method='post', action=`/books/${book.id}/delete`, onsubmit="return confirm('Are you sure you want to delete this book? This action cannot be undone.');")
+        p
+            input(type='submit', value='Delete Book')
