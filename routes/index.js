@@ -1,7 +1,11 @@
+// import libraries
 var express = require('express');
 var router = express.Router();
+
+//import book model
 const Book = require('../models').Book;
 
+// helper function to wrap route handlers
 function asyncHandler(cb){
   return async(req, res, next) => {
     try {
@@ -38,6 +42,7 @@ router.post('/books/new', asyncHandler(async (req, res) => {
   } catch (error) {
     if (error.name === 'SequelizeValidationError') {
       book = await Book.build(req.body);
+      // render form back with errors if validation fails
       res.render('new-book', { book, errors: error.errors, title:"New Book" });
     } else {
       throw error;
@@ -49,11 +54,13 @@ router.post('/books/new', asyncHandler(async (req, res) => {
 router.get('/books/:id', asyncHandler(async (req, res, next) => {
   const book = await Book.findByPk(req.params.id);
 
-  // Check if the book exists - send 404 and render page-not-found if not
+  // Check if the book exists 
+  // send 404 and render page-not-found if not
   if (!book) {
     res.status(404);
     res.render('page-not-found');
   } else {
+    // render upadte book form if the book exists
     res.render('update-book', { book, title: "Update Book" });
   }
 }));
@@ -62,7 +69,8 @@ router.get('/books/:id', asyncHandler(async (req, res, next) => {
 router.post('/books/:id', asyncHandler(async (req, res, next) => {
   const book = await Book.findByPk(req.params.id);
 
-  // Check if the book exists - send 404 and render page-not-found if not
+  // Check if the book exists 
+  // send 404 and render page-not-found if not
   if (!book) {
     res.status(404);
     res.render('page-not-found');
@@ -73,7 +81,7 @@ router.post('/books/:id', asyncHandler(async (req, res, next) => {
     await book.update(req.body);
     res.redirect('/books');
   } catch (error) {
-    // handle validation errors and render page with errors
+    // render form back with errors if validation fails
     if (error.name === "SequelizeValidationError") {
       res.render("update-book", { book, errors: error.errors, title: "Edit Book" });
     } else {
@@ -86,12 +94,17 @@ router.post('/books/:id', asyncHandler(async (req, res, next) => {
 // Post | Delete book
 router.post('/books/:id/delete', asyncHandler(async (req, res) => {
   const book = await Book.findByPk(req.params.id);
-  if (book) {
-    await book.destroy();
-    res.redirect('/');
-  } else {
+
+  // check if the book exists
+  // send 404 and render page-not-found if not
+  if (!book) {
     res.status(404);
     res.render('page-not-found');
+
+    // delete the book if it exists
+  } else {
+    await book.destroy();
+    res.redirect('/');
   }
 }));
 
